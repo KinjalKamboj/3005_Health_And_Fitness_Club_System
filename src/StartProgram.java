@@ -385,7 +385,7 @@ public class StartProgram {
                 System.out.println("Achieve By: " + result.getString(9));
                 System.out.println("Fitness Achievement: " + result.getString(12));
                 System.out.println("\n-Health Metrics ~ Blood Pressure-");
-                double bmi = result.getDouble(7)/(result.getDouble(6) * result.getDouble(6));
+                double bmi = Math.round(result.getDouble(7)/(result.getDouble(6) * result.getDouble(6)) * 10.0) / 10.0; //round to one decimal place
                 System.out.println("BMI: " + bmi);
                 if (bmi > 24.9){
                     System.out.println("Your BMI indicates you are overweight!");

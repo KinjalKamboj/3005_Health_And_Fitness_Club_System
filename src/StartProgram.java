@@ -285,7 +285,6 @@ public class StartProgram {
                 }
             }
         } catch (NumberFormatException | SQLException | InputMismatchException e) {
-            e.printStackTrace();
             System.out.println("Please enter a valid format for the field required.");
         }
     }
@@ -320,6 +319,8 @@ public class StartProgram {
                 System.out.println("Exercise Routine: ");
                 String routine = scan.next();
                 statement.setString(5, routine);
+
+                scan.nextLine();
 
                 System.out.println("Height (m): ");
                 double height = scan.nextDouble();
@@ -359,7 +360,6 @@ public class StartProgram {
                 }
             }
         } catch (NumberFormatException | SQLException | InputMismatchException e) {
-            e.printStackTrace();
             System.out.println("Please enter a valid format for the field required.");
         }
     }
@@ -462,7 +462,6 @@ public class StartProgram {
         }
 
         catch (SQLException e) {
-            e.printStackTrace();
             System.out.println("SQL Exception in Dashboard Display");
         }
     }
@@ -730,7 +729,7 @@ public class StartProgram {
 
                     if (update > 0){
                         System.out.println("Successfully paid outstanding bill.");
-                        displayReceipt();
+                        displayReceipt(currentUserName);
                     }
 
                     else{
@@ -744,15 +743,17 @@ public class StartProgram {
             }
         }
         catch (SQLException e){
-                    System.out.println("You have no outstanding bills.");
+                System.out.println("You have no outstanding bills.");
         }
     }
     
     // Display the receipt of the payment member has made
-    public static void displayReceipt(){
+    public static void displayReceipt(String name){
         try {
-            String getPaymentQuery = "SELECT * FROM Payments (first_name, last_name, fee_paid) VALUES (?, ?, ?)";
-            PreparedStatement feeStatement = connection.prepareStatement(getPaymentQuery);
+            System.out.println("Inside ");
+            String getPaymentQuery = "SELECT * FROM Payments WHERE first_name = ?";
+            PreparedStatement feeStatement = connection.prepareStatement(getPaymentQuery, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY );
+            feeStatement.setString(1, name);
             ResultSet payment = feeStatement.executeQuery();
 
              //calculate fees
@@ -768,30 +769,32 @@ public class StartProgram {
             System.out.println("========================================");
             System.out.println("            RECEIPT DETAILS             ");
             System.out.println("========================================");
-            System.out.println("Receipt ID: %-10s" + payment.getObject(1));
-            System.out.println("Customer Name: %-10s" + payment.getObject(2) + " " + payment.getObject(3));
-            System.out.println("Membership Fee: %-10s$" + 40.00);
-            System.out.println("%-10sClasses Fee");
-            for (int i = 1; i > classCount; i++){
-                System.out.println(i + "x " + classFee);
-            }
-            System.out.println("= " + classCount * classFee);
-            System.out.println("%-10s Sessions Fee");
-            for (int i = 1; i > sessionCount; i++){
-                System.out.println(i + "x " + sessionFee);
-            }
-            System.out.println("= " + sessionCount * sessionFee);
-            System.out.println("Equipment Use Fee: %-10s$" + equipmentUseFee);
-            System.out.println("Locker Use Fee: %-10s$" + lockerUseFee);
-            System.out.println("--------------------------------");
-            System.out.println("\nSubtotal: %-10s" + subtotal);
-            System.out.println("Tax: %-10s" + tax);
-            System.out.println("Total: %-10s" + total);
-            System.out.println("\nTransaction Date: %-10s" + payment.getDate(5));
+            if (payment.next()) {
+                System.out.println("Receipt ID: " + payment.getObject(1));
+                System.out.println("Customer Name: " + payment.getObject(2) + " " + payment.getObject(3));
+                System.out.println("Membership Fee: $" + 40.00);
+                System.out.println("Classes Fee:");
+                for (int i = 1; i <= classCount; i++) {
+                    System.out.println(i + "x " + classFee);
+                }
+                System.out.println("= " + classCount * classFee);
+                System.out.println("Sessions Fee:");
+                for (int i = 1; i <= sessionCount; i++) {
+                    System.out.println(i + "x " + sessionFee);
+                }
+                System.out.println("= " + sessionCount * sessionFee);
+                System.out.println("Equipment Use Fee: $" + equipmentUseFee);
+                System.out.println("Locker Use Fee: $" + lockerUseFee);
+                System.out.println("--------------------------------");
+                System.out.println("\nSubtotal: " + subtotal);
+                System.out.println("Tax: " + tax);
+                System.out.println("Total: " + total);
+                System.out.println("\nTransaction Date: " + payment.getObject(6));
+            }            
         }
 
         catch (SQLException e){
-
+            System.out.println("Could not display receipt of payment.");
         }
     }
     
@@ -901,7 +904,6 @@ public class StartProgram {
                         deleteStatement.executeUpdate();
                     }
                     catch(SQLException e){
-                        e.printStackTrace();
                         System.out.println("No notifications to display.");
                     }
                 }
@@ -1148,7 +1150,7 @@ public class StartProgram {
             PreparedStatement classStatement = connection.prepareStatement(classQuery);
             classStatement.setString(1, member_name);
 
-            String sessionQuery = "SELECT * FROM ClassParticipants WHERE first_name = ?";
+            String sessionQuery = "SELECT * FROM SessionParticipants WHERE first_name = ?";
             PreparedStatement sessionStatement = connection.prepareStatement(sessionQuery);
             sessionStatement.setString(1, member_name);
 
@@ -1189,7 +1191,7 @@ public class StartProgram {
             //if they have already made a previous payment, update the fee_paid
             if (rowCount > 0){
                 try {
-                    String updateFeeQuery = "UPDATE Payments SET fee_paid = ? AND status = ? WHERE first_name = ?";
+                    String updateFeeQuery = "UPDATE Payments SET fee_paid = ?, status = ? WHERE first_name = ?";
                     PreparedStatement updateFeeStatement = connection.prepareStatement(updateFeeQuery);
                     updateFeeStatement.setDouble(1, total);
                     updateFeeStatement.setString(2, "Unpaid");
@@ -1472,7 +1474,6 @@ public class StartProgram {
             System.out.println("Successfully sent trainer a notification.");
         }
         catch (SQLException e) {
-            e.printStackTrace();
             System.out.println("Could not send trainer a notification.");
         }
     }
@@ -1510,7 +1511,6 @@ public class StartProgram {
                 }
 
                 catch (SQLException e){
-                    e.printStackTrace();
                     System.out.println("No equipments to display.");
                 }
             }

@@ -3,8 +3,8 @@ This repo is considered as the submission for COMP3005 Final Project Version 2.
 
 # Files Included
 * src/StartProgram.java
-* ddl/DDL.sql
-* dml/DML.sql
+* SQL/DDL.sql
+* SQL/DML.sql
 * README.md
 
 # Steps to Create a Database
